@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="id" class="scroll-smooth">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>AI Credit Scoring - Credit Union MVP</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link
+         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+         rel="stylesheet"
+      />
+      <script src="https://unpkg.com/feather-icons"></script>
+
+      <script>
+         tailwind.config = {
+            theme: {
+               extend: {
+                  fontFamily: {
+                     sans: ["Inter", "sans-serif"],
+                     mono: ["JetBrains Mono", "monospace"],
+                  },
+                  colors: {
+                     cuDark: "#064e3b",    // Emerald 900 - Tema khas Koperasi
+                     cuGreen: "#059669",   // Emerald 600 - Hijau segar
+                     cuGold: "#d97706",    // Amber 600 - Emas kejayaan
+                     cuRed: "#dc2626",     // Red 600 - Tolak
+                  },
+               },
+            },
+         };
+      </script>
+      <style>
+         /* Global Custom Scrollbar biar Rapi & Elegan */
+         ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+         }
+         ::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+            border-radius: 8px;
+         }
+         ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 8px;
+         }
+         ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+         }
+
+         /* Custom Scrollbar khusus Terminal SHAP biar nyatu sama background gelap */
+         .shap-box::-webkit-scrollbar-track {
+            background: #0f172a;
+         }
+         .shap-box::-webkit-scrollbar-thumb {
+            background: #334155;
+         }
+         .shap-box::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+         }
+
+         /* Soft shadow untuk input focus */
+         .input-focus-ring:focus {
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+         }
+      </style>
+   </head>
+   <body class="bg-slate-50 text-slate-800 font-sans antialiased h-screen flex overflow-hidden">
+      
+      <aside class="w-64 bg-cuDark text-slate-200 hidden md:flex flex-col shadow-2xl z-20">
+         <div class="h-16 flex items-center px-6 border-b border-emerald-800/50 bg-cuDark shadow-sm">
+            <div class="bg-gradient-to-br from-cuGold to-yellow-400 text-cuDark p-1.5 rounded-lg mr-3 shadow-md">
+               <i data-feather="shield" class="w-5 h-5"></i>
+            </div>
+            <span class="text-white font-bold text-lg tracking-wide">
+               Kopdit<span class="text-cuGold ml-1">AI</span>
+            </span>
+         </div>
+         <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="#" class="flex items-center px-4 py-3 bg-emerald-800/40 text-emerald-300 rounded-lg transition-colors border-l-4 border-cuGold shadow-sm">
+               <i data-feather="activity" class="mr-3 w-5 h-5"></i>
+               <span class="font-medium">Credit Scoring</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 hover:bg-emerald-800/30 hover:text-white rounded-lg transition-all duration-200">
+               <i data-feather="users" class="mr-3 w-5 h-5"></i>
+               <span>Data Anggota</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 hover:bg-emerald-800/30 hover:text-white rounded-lg transition-all duration-200">
+               <i data-feather="file-text" class="mr-3 w-5 h-5"></i>
+               <span>Riwayat Audit</span>
+            </a>
+         </nav>
+         <div class="p-4 border-t border-emerald-800/50 bg-emerald-900/20">
+            <div class="flex items-center">
+               <div class="w-9 h-9 rounded-full border-2 border-cuGold bg-emerald-700 text-white flex items-center justify-center font-bold mr-3 shadow-sm">
+                  EP
+               </div>
+               <div>
+                  <p class="text-white font-medium text-sm">E. Prayoga</p>
+                  <p class="text-emerald-400/80 text-xs">Komite Kredit</p>
+               </div>
+            </div>
+         </div>
+      </aside>
+
+      <div class="flex-1 flex flex-col h-screen relative bg-slate-100/50">
+         <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 shadow-sm">
+            <div class="flex items-center md:hidden">
+               <i data-feather="shield" class="text-cuGreen mr-2"></i>
+               <span class="font-bold text-slate-800">Kopdit AI</span>
+            </div>
+            <div class="hidden md:flex items-center text-sm text-slate-500">
+               <i data-feather="home" class="w-4 h-4 mr-2"></i>
+               <span class="font-medium">Ruang Kerja</span> 
+               <i data-feather="chevron-right" class="w-4 h-4 mx-1"></i>
+               <span class="text-cuGreen font-semibold">Analisis Kelayakan</span>
+            </div>
+            <div class="flex items-center space-x-4">
+               <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                  Model v1.2 Active
+               </span>
+            </div>
+         </header>
+
+         <main class="flex-1 overflow-hidden p-4 sm:p-6 lg:p-8 flex flex-col">
+            <div class="mb-4 shrink-0">
+               <h1 class="text-2xl font-bold text-slate-800 tracking-tight">
+                  Formulir Kelayakan Pinjaman
+               </h1>
+               <p class="text-slate-500 mt-1 text-sm">
+                  Masukkan parameter anggota untuk memicu algoritma *Risk Engine* Koperasi.
+               </p>
+            </div>
+
+            <div class="flex-1 grid grid-cols-1 xl:grid-cols-12 gap-6 min-h-0">
+               
+               <div class="xl:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+                  <div class="bg-gradient-to-r from-slate-50 to-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0">
+                     <h2 class="font-semibold text-slate-800 flex items-center">
+                        <i data-feather="file-plus" class="w-4 h-4 mr-2 text-cuGreen"></i>
+                        Data Pemohon
+                     </h2>
+                     <button type="button" onclick="document.getElementById('creditForm').reset()" class="text-xs text-slate-400 hover:text-cuRed font-medium flex items-center transition-colors">
+                        <i data-feather="refresh-ccw" class="w-3 h-3 mr-1"></i> Bersihkan
+                     </button>
+                  </div>
+
+                  <div class="flex-1 overflow-y-auto p-6">
+                     <form id="creditForm" class="space-y-8">
+                        <div>
+                           <div class="flex items-center mb-4">
+                              <span class="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-cuGreen font-bold text-xs mr-2">1</span>
+                              <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Demografi & Finansial</h3>
+                           </div>
+                           <div class="space-y-5 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                              <div class="grid grid-cols-2 gap-5">
+                                 <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Usia (Tahun)</label>
+                                    <input type="number" id="age" required min="21" max="80" class="input-focus-ring w-full px-3 py-2.5 border border-slate-300 rounded-lg outline-none transition-all text-sm font-medium" placeholder="Cth: 35" />
+                                 </div>
+                                 <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Gaji Bersih /Bulan</label>
+                                    <div class="relative">
+                                       <span class="absolute left-3 top-2.5 text-slate-400 text-sm font-medium">Rp</span>
+                                       <input type="number" id="salary" required min="0" step="100000" class="input-focus-ring w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg outline-none transition-all text-sm font-medium" placeholder="5.000.000" />
+                                    </div>
+                                 </div>
+                              </div>
+                              <div class="grid grid-cols-2 gap-5">
+                                 <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Rasio Utang (DTI) %</label>
+                                    <input type="number" id="dti" required min="0" max="100" class="input-focus-ring w-full px-3 py-2.5 border border-slate-300 rounded-lg outline-none transition-all text-sm font-medium" placeholder="Cth: 30" />
+                                 </div>
+                                 <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jml. Tanggungan</label>
+                                    <input type="number" id="dependents" required min="0" class="input-focus-ring w-full px-3 py-2.5 border border-slate-300 rounded-lg outline-none transition-all text-sm font-medium" placeholder="0 Orang" />
+                                 </div>
+                              </div>
+                              <div class="grid grid-cols-2 gap-5">
+                                 <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Nilai Agunan</label>
+                                    <div class="relative">
+                                       <span class="absolute left-3 top-2.5 text-slate-400 text-sm font-medium">Rp</span>
+                                       <input type="number" id="collateral" required min="0" step="100000" class="input-focus-ring w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-lg outline-none transition-all text-sm font-medium" placeholder="Aset Jaminan" />
+                                    </div>
+                                 </div>
+                                 <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Lama Bekerja</label>
+                                    <div class="relative">
+                                       <input type="number" id="tenure" required min="0" step="0.5" class="input-focus-ring w-full px-3 py-2.5 border border-slate-300 rounded-lg outline-none transition-all text-sm font-medium" placeholder="0" />
+                                       <span class="absolute right-3 top-2.5 text-slate-400 text-sm font-medium">Tahun</span>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div>
+                           <div class="flex items-center mb-4">
+                              <span class="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-cuGreen font-bold text-xs mr-2">2</span>
+                              <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Histori SLIK OJK</h3>
+                           </div>
+                           <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                              <label class="block text-xs font-semibold text-slate-600 mb-1.5">Riwayat Telat Bayar (Days Past Due)</label>
+                              <div class="relative">
+                                 <input type="number" id="dpd" required min="0" class="input-focus-ring w-full px-3 py-2.5 border border-slate-300 rounded-lg outline-none transition-all text-sm font-medium" placeholder="Isi 0 jika historis bersih" />
+                                 <span class="absolute right-3 top-2.5 text-slate-400 text-sm font-medium">Hari</span>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div>
+                           <div class="flex items-center mb-4">
+                              <span class="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-cuGreen font-bold text-xs mr-2">3</span>
+                              <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Kultural Koperasi</h3>
+                           </div>
+                           <div class="space-y-5 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100">
+                              <div>
+                                 <label class="block text-xs font-semibold text-slate-600 mb-2">Kehadiran Rapat Anggota Tahunan (RAT)</label>
+                                 <div class="flex items-center space-x-4 bg-white px-4 py-2 border border-slate-200 rounded-lg shadow-sm">
+                                    <input type="range" id="rat" min="0" max="100" value="80" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-cuGreen" oninput="document.getElementById('ratValue').innerText = this.value + '%'" />
+                                    <span id="ratValue" class="text-sm font-bold text-cuGreen w-12 text-right">80%</span>
+                                 </div>
+                              </div>
+                              <div class="grid grid-cols-2 gap-5">
+                                 <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Lulus Diksar Koperasi?</label>
+                                    <select id="diksar" class="input-focus-ring w-full px-3 py-2.5 border border-slate-300 rounded-lg outline-none transition-all text-sm font-medium bg-white">
+                                       <option value="yes">Ya, Lulus</option>
+                                       <option value="no">Belum</option>
+                                    </select>
+                                 </div>
+                                 <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Penjamin Sosial</label>
+                                    <select id="guarantor" class="input-focus-ring w-full px-3 py-2.5 border border-slate-300 rounded-lg outline-none transition-all text-sm font-medium bg-white">
+                                       <option value="yes">Ada (Keluarga/Anggota)</option>
+                                       <option value="no">Tidak Ada</option>
+                                    </select>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </form>
+                  </div>
+                  
+                  <div class="p-4 border-t border-slate-200 bg-white shrink-0">
+                     <button id="btnSubmit" type="submit" form="creditForm" class="w-full py-3.5 px-4 bg-cuGreen hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center group">
+                        <i data-feather="cpu" class="w-5 h-5 mr-2 group-hover:animate-pulse text-emerald-200"></i>
+                        Proses Analisis AI Engine
+                     </button>
+                  </div>
+               </div>
+
+               <div class="xl:col-span-7 flex flex-col h-full overflow-hidden bg-transparent">
+                  
+                  <div id="state-empty" class="flex-1 bg-white border border-slate-200 rounded-2xl flex flex-col items-center justify-center p-8 text-center transition-opacity duration-300 shadow-sm">
+                     <div class="w-20 h-20 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center shadow-inner mb-5">
+                        <i data-feather="pie-chart" class="w-10 h-10 text-slate-300"></i>
+                     </div>
+                     <h3 class="text-xl font-bold text-slate-700">Menunggu Parameter Masukan</h3>
+                     <p class="text-slate-500 mt-2 max-w-md text-sm leading-relaxed">
+                        Lengkapi formulir di panel sebelah kiri lalu eksekusi analisis untuk mendapatkan laporan probabilitas kelayakan kredit berserta log audit otomatis.
+                     </p>
+                  </div>
+
+                  <div id="state-loading" class="hidden flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center p-8 transition-opacity duration-300">
+                     <div class="relative w-24 h-24 mb-6">
+                        <div class="absolute inset-0 rounded-full border-4 border-slate-100"></div>
+                        <div class="absolute inset-0 rounded-full border-4 border-cuGreen border-t-transparent animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                           <i data-feather="shield" class="w-8 h-8 text-cuGreen animate-pulse"></i>
+                        </div>
+                     </div>
+                     <h3 class="text-lg font-bold text-slate-800 tracking-tight">AI Sedang Melakukan Audit...</h3>
+                     <p class="text-slate-500 mt-2 text-sm text-center">Menghitung probabilitas NPL & mengekstrak *SHAP Values*.</p>
+                     
+                     <div class="w-full max-w-sm mt-8 space-y-2">
+                        <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                           <div class="h-full bg-cuGold w-full animate-[progress_2s_ease-in-out_infinite]" style="transform-origin: left"></div>
+                        </div>
+                        <div class="flex justify-between text-xs font-mono text-slate-400 font-medium">
+                           <span>Processing Model /api/predict</span>
+                           <span class="animate-pulse text-cuGold">...</span>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div id="state-result" class="hidden flex-1 flex flex-col space-y-4 overflow-y-auto p-1 scroll-smooth custom-scrollbar">
+                     
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 shrink-0">
+                        <div id="decision-card" class="bg-white rounded-2xl shadow-sm border p-6 flex flex-col justify-center items-center text-center relative overflow-hidden transition-colors duration-500">
+                           <div id="decision-glow" class="absolute inset-0 opacity-10"></div>
+                           <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 z-10 bg-white/50 px-3 py-1 rounded-full backdrop-blur-sm">Rekomendasi Final</span>
+                           <h2 id="decision-text" class="text-4xl font-black z-10 tracking-tight">APPROVED</h2>
+                           <div id="decision-subtext" class="mt-3 px-4 py-1.5 rounded-full text-sm font-semibold z-10 flex items-center">
+                              <i data-feather="check-circle" class="w-4 h-4 mr-1.5"></i> Risiko Aman
+                           </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col justify-center items-center text-center relative">
+                           <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">Confidence Score</span>
+                           <div class="relative flex items-center justify-center mt-2">
+                              <svg class="w-28 h-28 transform -rotate-90 drop-shadow-sm">
+                                 <circle cx="56" cy="56" r="44" stroke="currentColor" stroke-width="10" fill="transparent" class="text-slate-100"/>
+                                 <circle id="score-ring" cx="56" cy="56" r="44" stroke="currentColor" stroke-width="10" fill="transparent" stroke-dasharray="276" stroke-dashoffset="0" class="text-cuGreen transition-all duration-1000 ease-out" stroke-linecap="round"/>
+                              </svg>
+                              <div class="absolute flex flex-col items-center justify-center">
+                                 <span id="score-text" class="text-4xl font-black text-slate-800">85<span class="text-xl text-slate-400 font-bold">%</span></span>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div class="flex-1 bg-cuNavy rounded-2xl shadow-md border border-slate-800 flex flex-col overflow-hidden min-h-[350px]">
+                        <div class="bg-[#0b1221] border-b border-slate-800 px-5 py-3 flex items-center justify-between shrink-0">
+                           <div class="flex items-center space-x-3">
+                              <i data-feather="terminal" class="w-4 h-4 text-emerald-400"></i>
+                              <span class="text-xs font-mono font-semibold text-slate-300 uppercase tracking-wide">SHAP Audit Log & Explanations</span>
+                           </div>
+                           <div class="flex space-x-2">
+                              <div class="w-3 h-3 rounded-full bg-slate-700/50 border border-slate-600"></div>
+                              <div class="w-3 h-3 rounded-full bg-slate-700/50 border border-slate-600"></div>
+                              <div class="w-3 h-3 rounded-full bg-emerald-500/50 border border-emerald-500/50 animate-pulse"></div>
+                           </div>
+                        </div>
+
+                        <div class="p-6 font-mono text-[13px] overflow-y-auto shap-box bg-[#0d1117] flex-1 text-slate-300">
+                           <div id="shap-content" class="space-y-4 leading-relaxed">
+                              </div>
+                        </div>
+
+                        <div class="bg-[#0b1221] border-t border-slate-800 p-3.5 flex justify-between items-center text-xs text-slate-500 font-mono shrink-0">
+                           <span class="flex items-center"><i data-feather="lock" class="w-3 h-3 mr-1.5 text-slate-600"></i> Encrypted Session</span>
+                           <button class="hover:text-cuGold flex items-center transition-colors font-semibold">
+                              <i data-feather="download" class="w-3.5 h-3.5 mr-1.5"></i> Export Memo (PDF)
+                           </button>
+                        </div>
+                     </div>
+
+                     <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 shrink-0 mt-2 pb-2">
+                        <button onclick="alert('Fitur eskalasi ke rapat komite masih dalam tahap pengembangan MVP.')" class="flex items-center justify-center px-6 py-3 bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-bold rounded-xl shadow-sm transition-all text-sm group">
+                           <i data-feather="corner-up-right" class="w-4 h-4 mr-2 text-cuGold group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform"></i>
+                           Eskalasi Manual
+                        </button>
+                        <button onclick="alert('Fitur otorisasi pengesahan akhir masih dalam tahap pengembangan MVP.')" class="flex items-center justify-center px-6 py-3 bg-cuGreen hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all text-sm group">
+                           <i data-feather="check" class="w-4 h-4 mr-2 group-hover:scale-110 transition-transform"></i>
+                           Sahkan Keputusan AI
+                        </button>
+                     </div>
+
+                  </div>
+               </div>
+            </div>
+         </main>
+      </div>
+
+      <script>
+         feather.replace();
+
+         const style = document.createElement("style");
+         style.innerHTML = `
+            @keyframes progress {
+                0% { transform: scaleX(0); }
+                50% { transform: scaleX(1); }
+                100% { transform: scaleX(0); transform-origin: right; }
+            }
+        `;
+         document.head.appendChild(style);
+
+         const form = document.getElementById("creditForm");
+         const stateEmpty = document.getElementById("state-empty");
+         const stateLoading = document.getElementById("state-loading");
+         const stateResult = document.getElementById("state-result");
+         const btnSubmit = document.getElementById("btnSubmit");
+
+         const decisionText = document.getElementById("decision-text");
+         const decisionCard = document.getElementById("decision-card");
+         const decisionGlow = document.getElementById("decision-glow");
+         const decisionSubtext = document.getElementById("decision-subtext");
+         const scoreText = document.getElementById("score-text");
+         const scoreRing = document.getElementById("score-ring");
+         const shapContent = document.getElementById("shap-content");
+
+         form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const payload = {
+               usia_tahun: parseInt(document.getElementById("age").value),
+               gaji_per_bulan: parseFloat(document.getElementById("salary").value),
+               jumlah_tanggungan: parseInt(document.getElementById("dependents").value),
+               riwayat_telat_bayar_hari: parseInt(document.getElementById("dpd").value),
+               lama_bekerja_bulan: Math.round(parseFloat(document.getElementById("tenure").value) * 12),
+               rasio_utang_saat_ini: parseFloat(document.getElementById("dti").value) / 100,
+               nilai_agunan: parseFloat(document.getElementById("collateral").value),
+               persentase_kehadiran_rat: parseInt(document.getElementById("rat").value),
+               lulus_diksar: document.getElementById("diksar").value === "yes" ? 1 : 0,
+               ada_penjamin: document.getElementById("guarantor").value === "yes" ? 1 : 0,
+            };
+
+            stateEmpty.classList.add("hidden");
+            stateResult.classList.add("hidden");
+            stateLoading.classList.remove("hidden");
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `<i data-feather="loader" class="w-5 h-5 mr-2 animate-spin text-emerald-200"></i> Memproses Engine...`;
+            feather.replace();
+
+            try {
+               const response = await fetch("http://localhost:5000/api/predict", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+               });
+
+               if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+               const result = await response.json();
+               if (result.error) throw new Error(result.error);
+
+               const rawLogsArray = result.laporan_audit_teks.split("\n").filter((line) => line.trim() !== "");
+               const styledLogs = rawLogsArray.map((line) => {
+                  if (line.includes("TERIMA") || line.includes("APPROVED") || line.includes("[+]"))
+                     return `<span class="text-emerald-400 font-semibold">${line}</span>`;
+                  if (line.includes("TOLAK") || line.includes("REJECTED") || line.includes("[-]"))
+                     return `<span class="text-red-400 font-semibold">${line}</span>`;
+                  if (line.includes(">"))
+                     return `<span class="text-slate-300 ml-4">${line}</span>`;
+                  if (line.includes("STATUS") || line.includes("PROBABILITAS") || line.includes("RINGKASAN"))
+                     return `<span class="text-cuGold font-bold">${line}</span>`;
+                  return `<span class="text-slate-400">${line}</span>`;
+               });
+
+               const analysisData = {
+                  score: Math.round(result.probabilitas * 100),
+                  isApproved: result.status === "APPROVED",
+                  logs: styledLogs,
+               };
+
+               renderResult(analysisData);
+
+               stateLoading.classList.add("hidden");
+               stateResult.classList.remove("hidden");
+
+               setTimeout(() => {
+                  const circumference = 2 * Math.PI * 44; // r=44
+                  const offset = circumference - (analysisData.score / 100) * circumference;
+                  scoreRing.style.strokeDashoffset = offset;
+               }, 150);
+            } catch (error) {
+               console.error("API Fetch Error:", error);
+               alert("Gagal koneksi ke API Flask! \nPastikan 'python app.py' udah jalan.\n\nError details: " + error.message);
+               stateLoading.classList.add("hidden");
+               stateEmpty.classList.remove("hidden");
+            } finally {
+               btnSubmit.disabled = false;
+               btnSubmit.innerHTML = `<i data-feather="cpu" class="w-5 h-5 mr-2 group-hover:animate-pulse text-emerald-200"></i> Proses Analisis AI Engine`;
+               feather.replace();
+            }
+         });
+
+         function renderResult(analysis) {
+            scoreText.innerHTML = `${analysis.score}<span class="text-xl text-slate-400 font-bold">%</span>`;
+            
+            decisionCard.className = "bg-white rounded-2xl shadow-sm border p-6 flex flex-col justify-center items-center text-center relative overflow-hidden transition-colors duration-500";
+            decisionSubtext.className = "mt-3 px-4 py-1.5 rounded-full text-sm font-semibold z-10 flex items-center";
+            scoreRing.classList.remove("text-cuGreen", "text-cuRed");
+
+            if (analysis.isApproved) {
+               decisionText.innerText = "TERIMA";
+               decisionText.className = "text-4xl font-black z-10 tracking-tight text-cuGreen mt-1";
+               decisionCard.classList.add("bg-emerald-50", "border-emerald-200");
+               decisionGlow.className = "absolute inset-0 opacity-30 bg-gradient-to-tr from-emerald-400 to-transparent";
+               decisionSubtext.innerHTML = '<i data-feather="check-circle" class="w-4 h-4 mr-1.5"></i> Profil Aman';
+               decisionSubtext.classList.add("bg-emerald-100", "text-emerald-800");
+               scoreRing.classList.add("text-cuGreen");
+            } else {
+               decisionText.innerText = "TOLAK";
+               decisionText.className = "text-4xl font-black z-10 tracking-tight text-cuRed mt-1";
+               decisionCard.classList.add("bg-red-50", "border-red-200");
+               decisionGlow.className = "absolute inset-0 opacity-20 bg-gradient-to-tr from-red-500 to-transparent";
+               decisionSubtext.innerHTML = '<i data-feather="alert-triangle" class="w-4 h-4 mr-1.5"></i> Risiko Tinggi';
+               decisionSubtext.classList.add("bg-red-100", "text-red-800");
+               scoreRing.classList.add("text-cuRed");
+            }
+
+            feather.replace();
+
+            shapContent.innerHTML = "";
+            analysis.logs.forEach((logStr, index) => {
+               const div = document.createElement("div");
+               div.innerHTML = logStr;
+               div.style.opacity = "0";
+               div.style.transform = "translateY(8px)";
+               div.style.transition = "all 0.4s ease";
+               shapContent.appendChild(div);
+
+               setTimeout(() => {
+                  div.style.opacity = "1";
+                  div.style.transform = "translateY(0)";
+                  shapContent.parentElement.scrollTop = shapContent.parentElement.scrollHeight;
+               }, index * 120); 
+            });
+         }
+      </script>
+   </body>
+</html>
