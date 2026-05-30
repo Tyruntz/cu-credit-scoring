@@ -1,0 +1,29 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+
+# Git
+.git
+.gitignore
+
+# Docs & misc
+README.md
+*.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model file (akan di-generate ulang saat docker build)
+ai_engine/credit_model.pkl
+
+# Frontend (gak dibutuhin di backend container)
+index.html
